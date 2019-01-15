@@ -92,7 +92,7 @@ function App() {
         {({ formState }) => {
           return (
             <div>
-              <Input label="name" field="name" value={"msa"} />
+              <Input label="name" field="name" />
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>
           );
