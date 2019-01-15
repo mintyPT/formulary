@@ -10,15 +10,28 @@ class Form extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      values: { name: "msa" },
-      errors: { name: "msa is not valid" }
+      values: props.initialValues || {},
+      errors: { name: "msa is not valid" },
+      touched: {}
     };
   }
-  setValues(values) {
+
+  setValues = values => {
     this.setState({ values });
-  }
+  };
+
+  setValue = (field, value) => {
+    const { values, touched } = this.state;
+    values[field] = value;
+    touched[field] = true;
+    this.setState({ values, touched });
+  };
+
   render() {
-    const formApi = {};
+    const formApi = {
+      setValues: this.setValues,
+      setValue: this.setValue
+    };
     return (
       <Provider value={{ formState: this.state, formApi }}>
         {this.props.children({
@@ -34,23 +47,37 @@ const WithInput = Component => {
   return ({ ...props }) => (
     <Consumer>
       {({ formState, formApi }) => {
-        const { values, errors } = formState;
+        const { values, errors, touched } = formState;
         console.log("formApi", formApi);
         const value = values[props.field];
+        const touchedS = !!touched[props.field];
         const error = errors[props.field];
-        return <Component {...props} value={value} error={error} />;
+        const onChange = value => {
+          formApi.setValue(props.field, value);
+        };
+        return (
+          <Component
+            {...props}
+            value={value}
+            touched={touchedS}
+            error={error}
+            onChange={onChange}
+          />
+        );
       }}
     </Consumer>
   );
 };
 
-const Input = WithInput(({ label, error, ...props }) => {
+const Input = WithInput(({ label, error, touched, onChange, ...props }) => {
   return (
     <div>
       <div>
-        <small>{label}</small>
+        <small>
+          {label} - {String(touched)}
+        </small>
       </div>
-      <input {...props} />
+      <input {...props} onChange={e => onChange(e.target.value)} />
       <div>
         <small style={{ color: "red" }}>{error}</small>
       </div>
@@ -61,9 +88,14 @@ const Input = WithInput(({ label, error, ...props }) => {
 function App() {
   return (
     <div className="App">
-      <Form>
-        {() => {
-          return <Input label="name" field="name" value={"msa"} />;
+      <Form initialValues={{ name: "mauro" }}>
+        {({ formState }) => {
+          return (
+            <div>
+              <Input label="name" field="name" value={"msa"} />
+              <pre>{JSON.stringify(formState, null, 4)}</pre>
+            </div>
+          );
         }}
       </Form>
     </div>
