@@ -49,9 +49,24 @@ class Form extends React.Component {
     };
   };
 
-  onSubmit = () => {
+  onSubmit = e => {
+    e.preventDefault();
     const { validator } = this.props;
-    console.log("on submit", validator);
+    const { values } = this.state;
+    if (validator) {
+      _.mapValues(validator, (tests, key) => {
+        console.log(">", key, tests, values[key]);
+        let err;
+        for (let i = 0; i < tests.length; i++) {
+          const f = tests[i];
+          err = f(values[key]);
+          if (err) break;
+        }
+        if (err) {
+          this.setError(key, err);
+        }
+      });
+    }
   };
 
   render() {
