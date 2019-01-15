@@ -22,32 +22,49 @@ class Form extends React.Component {
   };
 
   setValue = (field, value) => {
-    const { values, touched } = this.state;
-    values[field] = value;
-    touched[field] = true;
-    this.setState({ values, touched });
+    let { values, touched } = this.state;
+    this.setState({
+      values: _.set(values, field, value),
+      touched: _.set(touched, field, true)
+    });
   };
 
   setTouched = (field, value = true) => {
     const { touched } = this.state;
-    touched[field] = value;
-    this.setState({ touched });
+    this.setState({
+      touched: _.set(touched, field, value)
+    });
   };
 
   setError = (field, error) => {
     const { errors, touched } = this.state;
-    errors[field] = error;
-    touched[field] = true;
-    this.setState({ errors, touched });
+    this.setState({
+      errors: _.set(errors, field, error),
+      touched: _.set(touched, field, true)
+    });
   };
 
-  getApi = () => {
-    return {
-      setValues: this.setValues,
-      setValue: this.setValue,
-      setTouched: this.setTouched,
-      setError: this.setError
-    };
+  addValue = (key, value) => {
+    let { values } = this.state;
+    let originalValue = _.get(values, key);
+    originalValue = !originalValue ? [] : _.castArray(originalValue);
+    console.log("originalValue");
+    originalValue = [...originalValue, value];
+    this.setState({
+      values: _.set(values, key, originalValue)
+    });
+  };
+
+  removeValue = (key, index) => {
+    let { values } = this.state;
+    const path = key + "." + index;
+    const vals = _.get(values, key);
+    this.setState({
+      values: _.set(values, key, [
+        ..._.slice(vals, 0, index),
+        ..._.slice(vals, index + 1)
+      ])
+    });
   };
 
   onSubmit = e => {
@@ -56,11 +73,11 @@ class Form extends React.Component {
     const { values } = this.state;
     if (validator) {
       _.mapValues(validator, (tests, key) => {
-        console.log(">", key, tests, values[key]);
+        console.log(">", key, tests, _.get(values, key));
         let err;
         for (let i = 0; i < tests.length; i++) {
           const f = tests[i];
-          err = f(values[key]);
+          err = f(_.get(values, key));
           if (err) break;
         }
         if (err) {
@@ -70,60 +87,85 @@ class Form extends React.Component {
     }
   };
 
+  getValue = key => {
+    let { values } = this.state;
+    return _.get(values, key);
+  };
+
+  getApi = () => {
+    return {
+      setValues: this.setValues,
+      setValue: this.setValue,
+      setTouched: this.setTouched,
+      setError: this.setError,
+      addValue: this.addValue,
+      getValue: this.getValue,
+      removeValue: this.removeValue
+    };
+  };
+
   render() {
     const formApi = this.getApi();
+    const obj = { formState: this.state, formApi };
     return (
-      <Provider value={{ formState: this.state, formApi }}>
-        <form onSubmit={this.onSubmit}>
-          {this.props.children({
-            formState: this.state,
-            formApi
-          })}
-        </form>
+      <Provider value={obj}>
+        <form onSubmit={this.onSubmit}>{this.props.children(obj)}</form>
       </Provider>
     );
   }
 }
 
 const WithInput = Component => {
-  return ({ ...props }) => (
-    <Consumer>
-      {({ formState, formApi }) => {
-        const { values, errors, touched } = formState;
-        const value = values[props.field];
-        const touchedS = !!touched[props.field];
-        const error = errors[props.field];
-        const onChange = value => {
-          formApi.setValue(props.field, value);
-        };
-        const onBlur = () => {
-          formApi.setTouched(props.field);
-        };
-        const fieldApi = {
-          setError: error => {
-            formApi.setError(props.field, error);
-          },
-          setValue: value => {
-            formApi.setValue(props.field, value);
-          },
-          setTouched: touched => {
-            formApi.setTouched(props.field, touched);
-          }
-        };
-        return (
-          <Component
-            {...props}
-            value={value}
-            touched={touchedS}
-            error={error}
-            onChange={onChange}
-            onBlur={onBlur}
-            fieldApi={fieldApi}
-          />
-        );
-      }}
-    </Consumer>
-  );
+  return class InputWrapper extends React.Component {
+    setError = (error, formApi) => {
+      formApi.setError(this.props.field, error);
+    };
+    setValue = (value, formApi) => {
+      formApi.setValue(this.props.field, value);
+    };
+    setTouched = (touched, formApi) => {
+      formApi.setTouched(this.props.field, touched);
+    };
+
+    render() {
+      const { ...props } = this.props;
+      return (
+        <Consumer>
+          {({ formState, formApi }) => {
+            const fieldName = props.field;
+            const { values, errors, touched } = formState;
+
+            const value = values[fieldName];
+            const touchedS = !!touched[fieldName];
+            const error = errors[fieldName];
+
+            const onChange = value => {
+              formApi.setValue(fieldName, value);
+            };
+            const onBlur = () => {
+              formApi.setTouched(props.field);
+            };
+            const fieldApi = {
+              setError: error => this.setError(error, formApi),
+              setValue: value => this.setValue(value, formApi),
+              setTouched: touched => this.setTouched(touched, formApi)
+            };
+            return (
+              <Component
+                {...props}
+                value={value}
+                touched={touchedS}
+                error={error}
+                onChange={onChange}
+                onBlur={onBlur}
+                fieldApi={fieldApi}
+              />
+            );
+          }}
+        </Consumer>
+      );
+    }
+  };
 };
 
 const Input = WithInput(
@@ -166,10 +208,17 @@ function App() {
             <div>
               <button
                 type="button"
-                onClick={() => formApi.setError("name", "nop")}
+                onClick={() => formApi.addValue("ages", Math.random())}
               >
-                error me
+                add age
               </button>
+              <button
+                type="button"
+                onClick={() => formApi.removeValue("ages", 0)}
+              >
+                remove age
+              </button>
+
               <Input label="name" field="name" />
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>
