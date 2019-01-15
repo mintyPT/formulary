@@ -12,8 +12,8 @@ class Form extends React.Component {
     super(props);
     this.state = {
       values: props.initialValues || {},
-      errors: { name: "msa is not valid" },
-      touched: {}
+      errors: props.initialErrors || {},
+      touched: props.initialTouched || {}
     };
   }
 
@@ -35,9 +35,10 @@ class Form extends React.Component {
   };
 
   setError = (field, error) => {
-    const { errors } = this.state;
+    const { errors, touched } = this.state;
     errors[field] = error;
-    this.setState({ errors });
+    touched[field] = true;
+    this.setState({ errors, touched });
   };
 
   getApi = () => {
@@ -101,6 +102,12 @@ const WithInput = Component => {
         const fieldApi = {
           setError: error => {
             formApi.setError(props.field, error);
+          },
+          setValue: value => {
+            formApi.setValue(props.field, value);
+          },
+          setTouched: touched => {
+            formApi.setTouched(props.field, touched);
           }
         };
         return (
@@ -135,9 +142,11 @@ const Input = WithInput(
             fieldApi.setError(e.target.value + " is not a valid value");
           }}
         />
-        <div>
-          <small style={{ color: "red" }}>{error}</small>
-        </div>
+        {touched && (
+          <div>
+            <small style={{ color: "red" }}>{error}</small>
+          </div>
+        )}
       </div>
     );
   }
