@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./styles.css";
+import _ from "lodash";
 
 const Context = React.createContext({});
 const Provider = Context.Provider;
@@ -48,14 +49,21 @@ class Form extends React.Component {
     };
   };
 
+  onSubmit = () => {
+    const { validator } = this.props;
+    console.log("on submit", validator);
+  };
+
   render() {
     const formApi = this.getApi();
     return (
       <Provider value={{ formState: this.state, formApi }}>
-        {this.props.children({
-          formState: this.state,
-          formApi
-        })}
+        <form onSubmit={this.onSubmit}>
+          {this.props.children({
+            formState: this.state,
+            formApi
+          })}
+        </form>
       </Provider>
     );
   }
@@ -123,7 +131,12 @@ const Input = WithInput(
 function App() {
   return (
     <div className="App">
-      <Form initialValues={{ name: "mauro" }}>
+      <Form
+        initialValues={{ name: "mauro" }}
+        validator={{
+          name: [v => (!v ? "required" : false)]
+        }}
+      >
         {({ formState, formApi }) => {
           return (
             <div>
