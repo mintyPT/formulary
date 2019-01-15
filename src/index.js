@@ -27,11 +27,29 @@ class Form extends React.Component {
     this.setState({ values, touched });
   };
 
-  render() {
-    const formApi = {
+  setTouched = (field, value = true) => {
+    const { touched } = this.state;
+    touched[field] = value;
+    this.setState({ touched });
+  };
+
+  setError = (field, error) => {
+    const { errors } = this.state;
+    errors[field] = error;
+    this.setState({ errors });
+  };
+
+  getApi = () => {
+    return {
       setValues: this.setValues,
-      setValue: this.setValue
+      setValue: this.setValue,
+      setTouched: this.setTouched,
+      setError: this.setError
     };
+  };
+
+  render() {
+    const formApi = this.getApi();
     return (
       <Provider value={{ formState: this.state, formApi }}>
         {this.props.children({
@@ -48,13 +66,16 @@ const WithInput = Component => {
     <Consumer>
       {({ formState, formApi }) => {
         const { values, errors, touched } = formState;
-        console.log("formApi", formApi);
         const value = values[props.field];
         const touchedS = !!touched[props.field];
         const error = errors[props.field];
         const onChange = value => {
           formApi.setValue(props.field, value);
         };
+        const onBlur = () => {
+          formApi.setTouched(props.field);
+        };
+        const fieldApi = {};
         return (
           <Component
             {...props}
@@ -62,6 +83,7 @@ const WithInput = Component => {
             touched={touchedS}
             error={error}
             onChange={onChange}
+            onBlur={onBlur}
           />
         );
       }}
@@ -89,9 +111,15 @@ function App() {
   return (
     <div className="App">
       <Form initialValues={{ name: "mauro" }}>
-        {({ formState }) => {
+        {({ formState, formApi }) => {
           return (
             <div>
+              <button
+                type="button"
+                onClick={() => formApi.setError("name", "nop")}
+              >
+                error me
+              </button>
               <Input label="name" field="name" />
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>
