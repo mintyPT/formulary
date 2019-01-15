@@ -75,7 +75,11 @@ const WithInput = Component => {
         const onBlur = () => {
           formApi.setTouched(props.field);
         };
-        const fieldApi = {};
+        const fieldApi = {
+          setError: error => {
+            formApi.setError(props.field, error);
+          }
+        };
         return (
           <Component
             {...props}
@@ -84,6 +88,7 @@ const WithInput = Component => {
             error={error}
             onChange={onChange}
             onBlur={onBlur}
+            fieldApi={fieldApi}
           />
         );
       }}
@@ -91,21 +96,29 @@ const WithInput = Component => {
   );
 };
 
-const Input = WithInput(({ label, error, touched, onChange, ...props }) => {
-  return (
-    <div>
+const Input = WithInput(
+  ({ label, error, touched, onChange, fieldApi, ...props }) => {
+    return (
       <div>
-        <small>
-          {label} - {String(touched)}
-        </small>
+        <div>
+          <small>
+            {label} - {String(touched)}
+          </small>
+        </div>
+        <input
+          {...props}
+          onChange={e => {
+            onChange(e.target.value);
+            fieldApi.setError(e.target.value + " is not a valid value");
+          }}
+        />
+        <div>
+          <small style={{ color: "red" }}>{error}</small>
+        </div>
       </div>
-      <input {...props} onChange={e => onChange(e.target.value)} />
-      <div>
-        <small style={{ color: "red" }}>{error}</small>
-      </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 function App() {
   return (
