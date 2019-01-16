@@ -6,7 +6,7 @@ import withInput from "./withInput";
 class NewForm extends Form {
   getTests = () => {
     return {
-      isAdult: age => (age >= 18 ? "isAdult" : false)
+      isAdult: age => (age >= 18 ? false : "isAdult")
     };
   };
 }
@@ -23,7 +23,6 @@ const Input = withInput(
           value={value}
           onChange={e => {
             onChange(e.target.value);
-            //fieldApi.setError(e.target.value + " is not a valid value");
           }}
         />
         {touched && (
@@ -47,14 +46,14 @@ const notValidTest = v =>
 function App() {
   return (
     <div className="App">
-      <Form
+      <NewForm
         initialValues={{ name: "mauro" }}
         onChange={(...etc) => console.log("onChange", ...etc)}
         onSubmit={(...etc) => console.log("onSubmit", ...etc)}
         onBlur={(...etc) => console.log("onBlur", ...etc)}
         validator={{
-          name: ["required", notValidTest],
-          "age.0": ["required", "isAdult"]
+          name: ["required" /*, notValidTest*/],
+          "ages.0": ["required", "isAdult"]
         }}
       >
         {({ formState, formApi }) => {
@@ -78,18 +77,17 @@ function App() {
               >
                 set error
               </button>
-
+              <button type="submit">submit</button>
+              formApi
               <Input label="Name" field="name" />
-
               {formApi.getValue("ages", []).map((a, i) => {
-                return <Input label="Age" field={`ages.${i}`} />;
+                return <Input key={a} label="Age" field={`ages.${i}`} />;
               })}
-
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>
           );
         }}
-      </Form>
+      </NewForm>
     </div>
   );
 }

@@ -111,6 +111,8 @@ class Form extends React.Component {
               validator = this.getTest(validator);
             }
 
+            console.log("validator", validator);
+
             err = await validator(value, values);
             if (err) break;
           }
@@ -144,7 +146,9 @@ class Form extends React.Component {
   clearErrors = () => {
     this.setState({ errors: {} });
   };
+
   onSubmit = async e => {
+    console.log("> onSubmit");
     e.preventDefault();
     this.clearErrors();
     const validationResult = await this.validate();
@@ -191,7 +195,14 @@ class Form extends React.Component {
     const obj = { formState: this.state, formApi };
     return (
       <Provider value={obj}>
-        <form onSubmit={this.onSubmit}>{this.props.children(obj)}</form>
+        <form
+          onSubmit={(...etc) => {
+            console.log("on form submit");
+            this.onSubmit(...etc);
+          }}
+        >
+          {this.props.children(obj)}
+        </form>
       </Provider>
     );
   }
