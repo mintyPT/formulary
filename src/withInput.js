@@ -38,7 +38,7 @@ const withInput = Component => {
             return (
               <Component
                 {...props}
-                value={value}
+                defaultValue={value}
                 touched={touched}
                 error={error}
                 onChange={onChange}

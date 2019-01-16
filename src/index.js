@@ -61,7 +61,9 @@ function App() {
             <div>
               <button
                 type="button"
-                onClick={() => formApi.addValue("ages", Math.random())}
+                onClick={() =>
+                  formApi.addValue("ages", { id: Math.random(), age: null })
+                }
               >
                 add age
               </button>
@@ -81,7 +83,7 @@ function App() {
               formApi
               <Input label="Name" field="name" />
               {formApi.getValue("ages", []).map((a, i) => {
-                return <Input key={a} label="Age" field={`ages.${i}`} />;
+                return <Input key={a.id} label="Age" field={`ages.${i}.age`} />;
               })}
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>
