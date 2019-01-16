@@ -34,7 +34,7 @@ const isRequiredTest = v => (!v ? "required" : false);
 const notValidTest = v =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
-      console.log("124");
+      return resolve(false);
       return resolve("not valid");
     }, 1000);
   });
@@ -45,7 +45,7 @@ function App() {
       <Form
         initialValues={{ name: "mauro" }}
         onChange={() => console.log("onChange")}
-        onSubmit={() => console.log("onSubmit")}
+        onSubmit={data => console.log("onSubmit", data)}
         onBlur={() => console.log("onBlur")}
         validator={{
           name: [isRequiredTest, notValidTest]

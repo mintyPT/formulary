@@ -54,7 +54,6 @@ class Form extends React.Component {
 
   removeValue = (key, index) => {
     let { values } = this.state;
-    const path = key + "." + index;
     const vals = _.get(values, key);
     this.setState({
       values: _.set(values, key, [
@@ -64,10 +63,10 @@ class Form extends React.Component {
     });
   };
 
-  onSubmit = async e => {
-    e.preventDefault();
-    const { validator } = this.props;
+  validate = async () => {
     const { values } = this.state;
+    const { validator } = this.props;
+    let errors;
     if (validator) {
       const keys = _.keys(validator);
       const arrKeyAndError = await Promise.all(
@@ -87,7 +86,7 @@ class Form extends React.Component {
         })
       );
 
-      const errors = _.chain(arrKeyAndError)
+      errors = _.chain(arrKeyAndError)
         .filter(([nada, err]) => !!err)
         .fromPairs()
         .value();
@@ -95,6 +94,20 @@ class Form extends React.Component {
       _.mapValues(errors, (error, key) => {
         this.setError(key, error);
       });
+    }
+
+    return errors;
+  };
+
+  onSubmit = async e => {
+    e.preventDefault();
+    const validationResult = await this.validate();
+    console.log("validationResult", validationResult);
+    if (
+      (_.isNil(validationResult) || _.isEmpty(validationResult)) &&
+      this.props.onSubmit
+    ) {
+      this.props.onSubmit(this.state.values);
     }
   };
 
