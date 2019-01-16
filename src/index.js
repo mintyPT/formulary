@@ -17,7 +17,7 @@ const Input = withInput(
           value={value}
           onChange={e => {
             onChange(e.target.value);
-            fieldApi.setError(e.target.value + " is not a valid value");
+            //fieldApi.setError(e.target.value + " is not a valid value");
           }}
         />
         {touched && (
@@ -30,13 +30,25 @@ const Input = withInput(
   }
 );
 
+const isRequiredTest = v => (!v ? "required" : false);
+const notValidTest = v =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log("124");
+      return resolve("not valid");
+    }, 1000);
+  });
+
 function App() {
   return (
     <div className="App">
       <Form
         initialValues={{ name: "mauro" }}
+        onChange={() => console.log("onChange")}
+        onSubmit={() => console.log("onSubmit")}
+        onBlur={() => console.log("onBlur")}
         validator={{
-          name: [v => (!v ? "required" : false)]
+          name: [isRequiredTest, notValidTest]
         }}
       >
         {({ formState, formApi }) => {

@@ -64,22 +64,36 @@ class Form extends React.Component {
     });
   };
 
-  onSubmit = e => {
+  onSubmit = async e => {
     e.preventDefault();
     const { validator } = this.props;
     const { values } = this.state;
     if (validator) {
-      _.mapValues(validator, (tests, key) => {
-        console.log(">", key, tests, _.get(values, key));
-        let err;
-        for (let i = 0; i < tests.length; i++) {
-          const f = tests[i];
-          err = f(_.get(values, key));
-          if (err) break;
-        }
-        if (err) {
-          this.setError(key, err);
-        }
+      const keys = _.keys(validator);
+      const arrKeyAndError = await Promise.all(
+        _.map(keys, async key => {
+          let err;
+
+          const value = _.get(values, key);
+          const tests = validator[key];
+
+          for (let i = 0; i < tests.length; i++) {
+            const validator = tests[i];
+            err = await validator(value, values);
+            if (err) break;
+          }
+
+          return [key, err];
+        })
+      );
+
+      const errors = _.chain(arrKeyAndError)
+        .filter(([nada, err]) => !!err)
+        .fromPairs()
+        .value();
+      console.log("after tests", errors);
+      _.mapValues(errors, (error, key) => {
+        this.setError(key, error);
       });
     }
   };
