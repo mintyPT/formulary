@@ -191,6 +191,7 @@ class Form extends React.Component {
   };
 
   render() {
+    console.log("render!");
     const formApi = this.getApi();
     const obj = { formState: this.state, formApi };
     return (
