@@ -8,9 +8,7 @@ const Input = withInput(
     return (
       <div>
         <div>
-          <small>
-            {label} - {String(touched)}
-          </small>
+          <small>{label}</small>
         </div>
         <input
           {...props}
@@ -30,7 +28,6 @@ const Input = withInput(
   }
 );
 
-const isRequiredTest = v => (!v ? "required" : false);
 const notValidTest = v =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -48,7 +45,7 @@ function App() {
         onSubmit={(...etc) => console.log("onSubmit", ...etc)}
         onBlur={(...etc) => console.log("onBlur", ...etc)}
         validator={{
-          name: [isRequiredTest, notValidTest]
+          name: ["required", notValidTest]
         }}
       >
         {({ formState, formApi }) => {
@@ -73,10 +70,10 @@ function App() {
                 set error
               </button>
 
-              <Input label="name" field="name" />
+              <Input label="Name" field="name" />
 
               {formApi.getValue("ages", []).map((a, i) => {
-                return <Input label="age" field={`ages.${i}`} />;
+                return <Input label="Age" field={`ages.${i}`} />;
               })}
 
               <pre>{JSON.stringify(formState, null, 4)}</pre>

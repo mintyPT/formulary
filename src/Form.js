@@ -5,6 +5,10 @@ export const Context = React.createContext({});
 export const Provider = Context.Provider;
 export const Consumer = Context.Consumer;
 
+const testsLibrary = {
+  required: v => (!v ? "required" : false)
+};
+
 class Form extends React.Component {
   constructor(props) {
     super(props);
@@ -78,6 +82,10 @@ class Form extends React.Component {
     this.triggerParentOnChange(field);
   };
 
+  getTest = name => {
+    return testsLibrary[name];
+  };
+
   validate = async () => {
     const { values } = this.state;
     const { validator } = this.props;
@@ -92,7 +100,12 @@ class Form extends React.Component {
           const tests = validator[key];
 
           for (let i = 0; i < tests.length; i++) {
-            const validator = tests[i];
+            let validator = tests[i];
+
+            if (_.isString(validator)) {
+              validator = this.getTest(validator);
+            }
+
             err = await validator(value, values);
             if (err) break;
           }
