@@ -96,13 +96,14 @@ class Form extends React.Component {
     const { validator } = this.props;
     let errors;
     if (validator) {
-      const keys = _.keys(validator);
+      const initializedValidator = validator(values);
+      const keys = _.keys(initializedValidator);
       const arrKeyAndError = await Promise.all(
         _.map(keys, async key => {
           let err;
 
           const value = _.get(values, key);
-          const tests = validator[key];
+          const tests = initializedValidator[key];
 
           for (let i = 0; i < tests.length; i++) {
             let validator = tests[i];
@@ -110,8 +111,6 @@ class Form extends React.Component {
             if (_.isString(validator)) {
               validator = this.getTest(validator);
             }
-
-            console.log("validator", validator);
 
             err = await validator(value, values);
             if (err) break;
@@ -125,7 +124,7 @@ class Form extends React.Component {
         .filter(([nada, err]) => !!err)
         .fromPairs()
         .value();
-      console.log("after tests", errors);
+
       _.mapValues(errors, (error, key) => {
         this.setError(key, error);
       });
@@ -148,15 +147,11 @@ class Form extends React.Component {
   };
 
   onSubmit = async e => {
-    console.log("> onSubmit");
     e.preventDefault();
     this.clearErrors();
     const validationResult = await this.validate();
-    console.log(validationResult);
-    if (
-      (_.isNil(validationResult) || _.isEmpty(validationResult)) &&
-      this.props.onSubmit
-    ) {
+    const noErrors = _.isNil(validationResult) || _.isEmpty(validationResult);
+    if (noErrors && this.props.onSubmit) {
       this.props.onSubmit(this.state.values);
     }
   };
@@ -175,15 +170,18 @@ class Form extends React.Component {
 
   getApi = () => {
     return {
-      setValues: this.setValues,
-      setValue: this.setValue,
-      setTouched: this.setTouched,
       setError: this.setError,
+      setValue: this.setValue,
+      setValues: this.setValues,
+      setTouched: this.setTouched,
+
       addValue: this.addValue,
-      getValue: this.getValue,
       removeValue: this.removeValue,
-      getTouched: this.getTouched,
+
       getError: this.getError,
+      getValue: this.getValue,
+      getTouched: this.getTouched,
+
       onBlur: this.onBlur,
       onSubmit: this.onSubmit,
       onChange: this.onChange
@@ -196,12 +194,7 @@ class Form extends React.Component {
     const obj = { formState: this.state, formApi };
     return (
       <Provider value={obj}>
-        <form
-          onSubmit={(...etc) => {
-            console.log("on form submit");
-            this.onSubmit(...etc);
-          }}
-        >
+        <form onSubmit={(...etc) => this.onSubmit(...etc)}>
           {this.props.children(obj)}
         </form>
       </Provider>

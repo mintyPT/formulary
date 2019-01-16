@@ -43,18 +43,30 @@ const notValidTest = v =>
     }, 1000);
   });
 
-function App() {
-  return (
-    <div className="App">
+class FormWrapper extends React.Component {
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+
+  onSubmit = (...etc) => {
+    console.log("onSubmit", ...etc);
+    console.log(this.ref.current);
+    // this.ref.current.setError("name", "error in here");
+  };
+
+  render() {
+    return (
       <NewForm
+        ref={this.ref}
         initialValues={{ name: "mauro" }}
         onChange={(...etc) => console.log("onChange", ...etc)}
-        onSubmit={(...etc) => console.log("onSubmit", ...etc)}
+        onSubmit={this.onSubmit}
         onBlur={(...etc) => console.log("onBlur", ...etc)}
-        validator={{
-          name: ["required" /*, notValidTest*/],
-          "ages.0": ["required", "isAdult"]
-        }}
+        validator={values => ({
+          name: ["required" /*, notValidTest*/]
+          //"ages.0.age": ["required", "isAdult"]
+        })}
       >
         {({ formState, formApi }) => {
           return (
@@ -90,6 +102,14 @@ function App() {
           );
         }}
       </NewForm>
+    );
+  }
+}
+
+function App() {
+  return (
+    <div className="App">
+      <FormWrapper />
     </div>
   );
 }
