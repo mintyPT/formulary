@@ -14,11 +14,22 @@ class NewForm extends Form {
 const Input = withInput(
   ({ value, label, error, touched, onChange, fieldApi, ...props }) => {
     return (
-      <div>
+      <div
+        style={{
+          border: "1px solid #c2c2c2",
+          margin: "20px 0 20px",
+          padding: "5px"
+        }}
+      >
         <div>
-          <small>{label}</small>
+          <small style={{ color: touched && error ? "red" : "black" }}>
+            {label}
+          </small>
         </div>
         <input
+          style={{
+            border: touched && error ? "1px solid red" : "1px solid black"
+          }}
           {...props}
           value={value}
           onChange={e => {
