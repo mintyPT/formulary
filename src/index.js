@@ -3,6 +3,14 @@ import ReactDOM from "react-dom";
 import Form from "./Form";
 import withInput from "./withInput";
 
+class NewForm extends Form {
+  getTests = () => {
+    return {
+      isAdult: age => (age >= 18 ? "isAdult" : false)
+    };
+  };
+}
+
 const Input = withInput(
   ({ value, label, error, touched, onChange, fieldApi, ...props }) => {
     return (
@@ -45,7 +53,8 @@ function App() {
         onSubmit={(...etc) => console.log("onSubmit", ...etc)}
         onBlur={(...etc) => console.log("onBlur", ...etc)}
         validator={{
-          name: ["required", notValidTest]
+          name: ["required", notValidTest],
+          "age.0": ["required", "isAdult"]
         }}
       >
         {({ formState, formApi }) => {
