@@ -66,6 +66,12 @@ function App() {
               >
                 remove age
               </button>
+              <button
+                type="button"
+                onClick={() => formApi.setError("ages.0", "nope!")}
+              >
+                set error
+              </button>
 
               <Input label="name" field="name" />
 

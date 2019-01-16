@@ -156,7 +156,10 @@ class Form extends React.Component {
       getValue: this.getValue,
       removeValue: this.removeValue,
       getTouched: this.getTouched,
-      getError: this.getError
+      getError: this.getError,
+      onBlur: this.onBlur,
+      onSubmit: this.onSubmit,
+      onChange: this.onChange
     };
   };
 

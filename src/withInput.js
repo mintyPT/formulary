@@ -25,12 +25,10 @@ const withInput = Component => {
             const error = formApi.getError(field);
 
             const onChange = value => {
-              // formApi.setValue(field, value);
               formApi.onChange(field, value);
             };
             const onBlur = () => {
-              // formApi.setTouched(field);
-              formApi.onBlur(field, value);
+              formApi.onBlur(field);
             };
             const fieldApi = {
               setError: value => this.setError(value, formApi),
