@@ -18,28 +18,30 @@ const withInput = Component => {
       return (
         <Consumer>
           {({ formState, formApi }) => {
-            const fieldName = props.field;
+            const field = props.field;
 
-            const value = formApi.getValue(fieldName);
-            const touchedS = !!formApi.getTouched(fieldName);
-            const error = formApi.getError(fieldName);
+            const value = formApi.getValue(field);
+            const touched = !!formApi.getTouched(field);
+            const error = formApi.getError(field);
 
             const onChange = value => {
-              formApi.setValue(fieldName, value);
+              // formApi.setValue(field, value);
+              formApi.onChange(field, value);
             };
             const onBlur = () => {
-              formApi.setTouched(props.field);
+              // formApi.setTouched(field);
+              formApi.onBlur(field, value);
             };
             const fieldApi = {
-              setError: error => this.setError(error, formApi),
+              setError: value => this.setError(value, formApi),
               setValue: value => this.setValue(value, formApi),
-              setTouched: touched => this.setTouched(touched, formApi)
+              setTouched: value => this.setTouched(value, formApi)
             };
             return (
               <Component
                 {...props}
                 value={value}
-                touched={touchedS}
+                touched={touched}
                 error={error}
                 onChange={onChange}
                 onBlur={onBlur}

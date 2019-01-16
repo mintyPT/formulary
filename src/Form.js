@@ -15,8 +15,20 @@ class Form extends React.Component {
     };
   }
 
+  triggerParentOnChange = field => {
+    if (this.props.onChange) {
+      this.props.onChange(this.state.values, field, this.getApi());
+    }
+  };
+  triggerParentOnBlur = field => {
+    if (this.props.onBlur) {
+      this.props.onBlur(this.state.values, field, this.getApi());
+    }
+  };
+
   setValues = values => {
     this.setState({ values });
+    this.triggerParentOnChange();
   };
 
   setValue = (field, value) => {
@@ -25,6 +37,7 @@ class Form extends React.Component {
       values: _.set(values, field, value),
       touched: _.set(touched, field, true)
     });
+    this.triggerParentOnChange(field);
   };
 
   setTouched = (field, value = true) => {
@@ -42,25 +55,27 @@ class Form extends React.Component {
     });
   };
 
-  addValue = (key, value) => {
+  addValue = (field, value) => {
     let { values } = this.state;
-    let originalValue = _.get(values, key);
+    let originalValue = _.get(values, field);
     originalValue = !originalValue ? [] : _.castArray(originalValue);
     originalValue = [...originalValue, value];
     this.setState({
-      values: _.set(values, key, originalValue)
+      values: _.set(values, field, originalValue)
     });
+    this.triggerParentOnChange(field);
   };
 
-  removeValue = (key, index) => {
+  removeValue = (field, index) => {
     let { values } = this.state;
-    const vals = _.get(values, key);
+    const vals = _.get(values, field);
     this.setState({
-      values: _.set(values, key, [
+      values: _.set(values, field, [
         ..._.slice(vals, 0, index),
         ..._.slice(vals, index + 1)
       ])
     });
+    this.triggerParentOnChange(field);
   };
 
   validate = async () => {
@@ -99,10 +114,18 @@ class Form extends React.Component {
     return errors;
   };
 
+  onChange = (field, value) => {
+    this.setValue(field, value);
+  };
+
+  onBlur = field => {
+    this.setTouched(field);
+    this.triggerParentOnBlur(field);
+  };
+
   onSubmit = async e => {
     e.preventDefault();
     const validationResult = await this.validate();
-    console.log("validationResult", validationResult);
     if (
       (_.isNil(validationResult) || _.isEmpty(validationResult)) &&
       this.props.onSubmit

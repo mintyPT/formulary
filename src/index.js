@@ -44,9 +44,9 @@ function App() {
     <div className="App">
       <Form
         initialValues={{ name: "mauro" }}
-        onChange={() => console.log("onChange")}
-        onSubmit={data => console.log("onSubmit", data)}
-        onBlur={() => console.log("onBlur")}
+        onChange={(...etc) => console.log("onChange", ...etc)}
+        onSubmit={(...etc) => console.log("onSubmit", ...etc)}
+        onBlur={(...etc) => console.log("onBlur", ...etc)}
         validator={{
           name: [isRequiredTest, notValidTest]
         }}
