@@ -1,12 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Form from "./Form";
-import withInput from "./withInput";
+import withInput from "./lib/withInput";
+import Form from "./lib/Form";
+import _ from 'lodash';
 
 class NewForm extends Form {
   getTests = () => {
     return {
-      isAdult: age => (age >= 18 ? false : "isAdult")
+      isRed: color => (color !== 'red' ? false : "This is not red!")
     };
   };
 }
@@ -46,10 +47,14 @@ const Input = withInput(
   }
 );
 
+/**
+ * Example of an async test
+ * @param {any} v value to test
+ */
+// eslint-disable-next-line
 const notValidTest = v =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
-      return resolve(false);
       return resolve("not valid");
     }, 1000);
   });
@@ -61,8 +66,7 @@ class FormWrapper extends React.Component {
   }
 
   onSubmit = (...etc) => {
-    console.log("onSubmit", ...etc);
-    console.log(this.ref.current);
+    console.log("onSubmit", this.state);
     // this.ref.current.setError("name", "error in here");
   };
 
@@ -70,43 +74,36 @@ class FormWrapper extends React.Component {
     return (
       <NewForm
         ref={this.ref}
-        initialValues={{ name: "mauro" }}
+        initialValues={{ name: "mauro", user: { name: 'silva' } }}
         onChange={(...etc) => console.log("onChange", ...etc)}
         onSubmit={this.onSubmit}
         onBlur={(...etc) => console.log("onBlur", ...etc)}
-        validator={values => ({
-          name: ["required" /*, notValidTest*/]
-          //"ages.0.age": ["required", "isAdult"]
-        })}
+        validator={values => {
+          const numberOfColors = _.get(values, 'colors', []).length
+          const c = Array(numberOfColors).map((v, i) => i)
+          console.log(`c -->`, c)
+          return {
+            name: ["required" /*, notValidTest*/]
+            //"colors.0.color": ["required", "isRed"]
+          }
+        }}
       >
         {({ formState, formApi }) => {
           return (
             <div>
-              <button
-                type="button"
-                onClick={() =>
-                  formApi.addValue("ages", { id: Math.random(), age: null })
-                }
-              >
-                add age
-              </button>
-              <button
-                type="button"
-                onClick={() => formApi.removeValue("ages", 0)}
-              >
-                remove age
-              </button>
-              <button
-                type="button"
-                onClick={() => formApi.setError("ages.0", "nope!")}
-              >
-                set error
-              </button>
+              <button type="button" onClick={() => formApi.addValue("colors", { id: Math.random(), color: null })} >Add color</button>
+              <button type="button" onClick={() => formApi.removeValue("colors", 0)}>Remove 1st color</button>
+              <button type="button" onClick={() => formApi.setError("colors.0", "nope!")} >Set 1st error</button>
               <button type="submit">submit</button>
-              formApi
+
               <Input label="Name" field="name" />
-              {formApi.getValue("ages", []).map((a, i) => {
-                return <Input key={a.id} label="Age" field={`ages.${i}.age`} />;
+
+              <NewForm field="user2" validator={values =>  ({name: ["required" /*, notValidTest*/]})}>
+                <Input label="Name" field="name" />
+              </NewForm>
+
+              {formApi.getValue("colors", []).map((a, i) => {
+                return <Input key={a.id} label="Color" field={`colors.${i}.color`} />;
               })}
               <pre>{JSON.stringify(formState, null, 4)}</pre>
             </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Consumer } from "./Form";
+import { Consumer } from "./context";
 
 const withInput = Component => {
   return class InputWrapper extends React.Component {
@@ -14,27 +14,29 @@ const withInput = Component => {
     };
 
     render() {
-      const { ...props } = this.props;
+      const { field, ...props } = this.props;
+
+      if(!field){
+        return <Component {...this.props}/>
+      }
+
       return (
         <Consumer>
           {({ formState, formApi }) => {
-            const field = props.field;
 
             const value = formApi.getValue(field);
             const touched = !!formApi.getTouched(field);
             const error = formApi.getError(field);
 
-            const onChange = value => {
-              formApi.onChange(field, value);
-            };
-            const onBlur = () => {
-              formApi.onBlur(field);
-            };
+            const onChange = value => formApi.onChange(field, value);
+            const onBlur = () => formApi.onBlur(field);
+        
             const fieldApi = {
               setError: value => this.setError(value, formApi),
               setValue: value => this.setValue(value, formApi),
               setTouched: value => this.setTouched(value, formApi)
             };
+
             return (
               <Component
                 {...props}

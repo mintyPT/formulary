@@ -1,15 +1,18 @@
 import _ from "lodash";
 import React from "react";
+import withInput from './withInput'
 
-export const Context = React.createContext({});
-export const Provider = Context.Provider;
-export const Consumer = Context.Consumer;
+import { Provider } from "./context";
+
+const baseTests = {
+  required: v => (!v ? "required" : false),
+}
 
 class Form extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      values: props.initialValues || {},
+      values: props.initialValues || props.defaultValue || {},
       errors: props.initialErrors || {},
       touched: props.initialTouched || {}
     };
@@ -20,6 +23,7 @@ class Form extends React.Component {
       this.props.onChange(this.state.values, field, this.getApi());
     }
   };
+
   triggerParentOnBlur = field => {
     if (this.props.onBlur) {
       this.props.onBlur(this.state.values, field, this.getApi());
@@ -84,14 +88,13 @@ class Form extends React.Component {
 
   getTest = name => {
     const allTests = {
-      required: v => (!v ? "required" : false),
+      ...baseTests,
       ...this.getTests()
     };
     return allTests[name];
   };
 
   validate = async () => {
-    console.log("> validate");
     const { values } = this.state;
     const { validator } = this.props;
     let errors;
@@ -189,17 +192,18 @@ class Form extends React.Component {
   };
 
   render() {
-    console.log("render!");
+    const { children } = this.props
     const formApi = this.getApi();
     const obj = { formState: this.state, formApi };
+    const markup = _.isFunction(children) ? children(obj) : this.props.children
     return (
       <Provider value={obj}>
         <form onSubmit={(...etc) => this.onSubmit(...etc)}>
-          {this.props.children(obj)}
+          {markup}
         </form>
       </Provider>
     );
   }
 }
 
-export default Form;
+export default withInput(Form);
